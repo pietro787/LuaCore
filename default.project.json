@@ -1,0 +1,6 @@
+{
+    "name": "luacore",
+    "tree": {
+        "$path": "src"
+    }
+}

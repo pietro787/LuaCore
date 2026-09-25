@@ -1,0 +1,17 @@
+{
+    "luau-lsp.studioPlugin.enabled": true,
+    "luau-lsp.sourcemap.enabled": true,
+    "luau-lsp.sourcemap.autogenerate": true,
+    "luau-lsp.sourcemap.sourcemapFile": "sourcemap.json",
+    "luau-lsp.sourcemap.includeNonScripts": true,
+    "luau-lsp.fflags.enableNewSolver": true,
+    "luau-lsp.fflags.sync": false,
+    "discord.enabled": true,
+    "editor.formatOnSave": true,
+    "[lua]": {
+        "editor.defaultFormatter": "JohnnyMorganz.stylua"
+    },
+    "[luau]": {
+        "editor.defaultFormatter": "JohnnyMorganz.stylua"
+    }
+}
