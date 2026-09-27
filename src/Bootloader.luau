@@ -23,6 +23,7 @@ const AllowAfterStart = {
 }
 
 local create = Vide.create
+local videRoot = Vide.root
 
 local root:Folder?
 
@@ -150,12 +151,12 @@ function Bootloader.Start(folder:Folder?)
 
     task.defer(function()
         if RunService:IsClient() then
-            Bootloader.StartUIs(uiModules)
+            Bootloader.StartUIs(uiModules::any)
         end
     end)
 end
 
-function Bootloader.StartUIs(uiModules:{Interface.ClassType})
+function Bootloader.StartUIs(uiModules:{Build:Interface.ClassType, [string]:any})
     if RunService:IsServer() then return end
     if uiStarted then return end
     uiStarted = true
@@ -166,43 +167,46 @@ function Bootloader.StartUIs(uiModules:{Interface.ClassType})
         return
     end
 
-    local ScreenGui
-    ScreenGui = create "ScreenGui" {
-        ResetOnSpawn = false,
-        Parent = Player:WaitForChild("PlayerGui"),
-        Name = "LuaCore_ScreenGui",
-        function()
-            local AllInterfaces = {}
-            for _, moduleInterface in uiModules do
-                if not moduleInterface.Instance then
-                    task.spawn(function()
-                        local waited = 0
-                        while not moduleInterface.Instance do
-                            task.wait(0.1)
-                            waited += 0.1
+    videRoot(function()
+        local ScreenGui
+        ScreenGui = create "ScreenGui" {
+            ResetOnSpawn = false,
+            Parent = Player:WaitForChild("PlayerGui"),
+            Name = "LuaCore_ScreenGui",
+            function()
+                local AllInterfaces = {}
+                for _, module in uiModules do
+                    local moduleInterface = module.Build
+                    if not moduleInterface.Instance then
+                        task.spawn(function()
+                            local waited = 0
+                            while not moduleInterface.Instance do
+                                task.wait(0.1)
+                                waited += 0.1
 
-                            if waited >= 2 then
-                                Output.Warn("the interface took too long to load", "Bootloader")
-                                break
+                                if waited >= 2 then
+                                    Output.Warn("the interface took too long to load", "Bootloader")
+                                    break
+                                end
                             end
-                        end
 
-                        if moduleInterface.Instance and typeof(moduleInterface.Instance) == "Instance" then
-                            moduleInterface.Instance.Parent = ScreenGui
-                        end
-                    end)
+                            if moduleInterface.Instance and typeof(moduleInterface.Instance) == "Instance" then
+                                moduleInterface.Instance.Parent = ScreenGui
+                            end
+                        end)
 
-                    continue
+                        continue
+                    end
+                    
+                    if typeof(moduleInterface.Instance) == "Instance" then
+                        table.insert(AllInterfaces, moduleInterface.Instance)
+                    end
                 end
-                
-                if typeof(moduleInterface.Instance) == "Instance" then
-                    table.insert(AllInterfaces, moduleInterface.Instance)
-                end
+
+                return table.unpack(AllInterfaces)
             end
-
-            return table.unpack(AllInterfaces)
-        end
-    }
+        }
+    end)
 end
 
 return setmetatable({}, {

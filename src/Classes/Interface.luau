@@ -34,7 +34,7 @@ function Interface:Create(callback)
     end
 
     if self.HasVide then
-        if RunService:IsStudio() then
+        if RunService:IsStudio() and not RunService:IsRunning() then
             self.BuildFunction = callback
             return self
         end
