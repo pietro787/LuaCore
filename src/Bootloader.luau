@@ -1,4 +1,6 @@
 --!strict
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 type ModuleInfo = {
     Name:string,
     Module:ModuleScript,
@@ -8,14 +10,24 @@ type ModuleInfo = {
 local Bootloader = {}
 
 local Output = require("./Output")
+local Interface = require("./Classes/Interface")
+local Vide = require("../Packages/vide")
 
 local started = false
+local uiStarted = false
+
 local bootOrder:{[string]:number} = {}
 const AllowAfterStart = {
     "GetStatus"
 }
 
+local create = Vide.create
+
 local root:Folder?
+
+local function GetLocalPlayer():Player?
+    return RunService:IsClient() and Players.LocalPlayer or nil
+end
 
 function Bootloader.GetStatus():{string}
     return {""}
@@ -83,6 +95,8 @@ function Bootloader.Start(folder:Folder?)
     end
 
     const Modules = Bootloader.MapModules()
+    local uiModules = {}
+
     for _, info in Modules do
         debug.profilebegin(info.Name)
         local requireSuccess, module = pcall(require, info.Module)
@@ -126,8 +140,68 @@ function Bootloader.Start(folder:Folder?)
             end)
         end
 
+        if module.Build and typeof(module.Build) == "table" then
+            table.insert(uiModules, module)
+        end
+
         debug.profileend()
-    end 
+    end
+
+    task.defer(function()
+        if RunService:IsClient() then
+            Bootloader.StartUIs(uiModules)
+        end
+    end)
+end
+
+function Bootloader.StartUIs(uiModules:{Interface.ClassType})
+    if RunService:IsServer() then return end
+    if uiStarted then return end
+    uiStarted = true
+
+    local Player = GetLocalPlayer()
+    if not Player then
+        Output.Error("'LocalPlayer' not found.", true, "Bootloader")
+        return
+    end
+
+    local ScreenGui
+    ScreenGui = create "ScreenGui" {
+        ResetOnSpawn = false,
+        Parent = Player:WaitForChild("PlayerGui"),
+        Name = "LuaCore_ScreenGui",
+        function()
+            local AllInterfaces = {}
+            for _, moduleInterface in uiModules do
+                if not moduleInterface.Instance then
+                    task.spawn(function()
+                        local waited = 0
+                        while not moduleInterface.Instance do
+                            task.wait(0.1)
+                            waited += 0.1
+
+                            if waited >= 2 then
+                                Output.Warn("the interface took too long to load", "Bootloader")
+                                break
+                            end
+                        end
+
+                        if moduleInterface.Instance and typeof(moduleInterface.Instance) == "Instance" then
+                            moduleInterface.Instance.Parent = ScreenGui
+                        end
+                    end)
+
+                    continue
+                end
+                
+                if typeof(moduleInterface.Instance) == "Instance" then
+                    table.insert(AllInterfaces, moduleInterface.Instance)
+                end
+            end
+
+            return table.unpack(AllInterfaces)
+        end
+    }
 end
 
 return setmetatable({}, {

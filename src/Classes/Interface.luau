@@ -1,4 +1,5 @@
 --!strict
+local RunService = game:GetService("RunService")
 export type ClassType = {
     new:(vide:any?) -> (ClassType),
     Create:(ClassType, callback:() -> (GuiBase2d)) -> (ClassType),
@@ -33,11 +34,15 @@ function Interface:Create(callback)
     end
 
     if self.HasVide then
+        if RunService:IsStudio() then
+            self.BuildFunction = callback
+            return self
+        end
+
         self.Vide.root(function()
             Interface = callback()
 
             if typeof(Interface) == "Instance" and Interface:IsA("GuiBase2d") then
-                print("is gui based")
                 self.Instance = Interface
                 self.BuildFunction = callback
             end

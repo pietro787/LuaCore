@@ -10,3 +10,4 @@ include = ["src/**", "wally.toml"]
 exclude = ["rokit.toml", ".vscode", "README.md"]
 
 [dependencies]
+vide = "centau/vide@0.4.1"
