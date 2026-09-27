@@ -12,7 +12,7 @@ local Bootloader = {}
 
 local Output = require("./Output")
 local Interface = require("./Classes/Interface")
-local Vide = require("./Packages/vide")
+local Vide = require("./libs/vide")
 
 local started = false
 local uiStarted = false
