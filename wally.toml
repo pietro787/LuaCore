@@ -1,7 +1,7 @@
 [package]
 name = "pietro787/luacore"
 description = "Framework pessoal para projetos simples"
-version = "0.1.2"
+version = "0.1.3"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 authors = ["pietroi5kk"]
@@ -10,4 +10,3 @@ include = ["src/**", "wally.toml"]
 exclude = ["rokit.toml", ".vscode", "README.md"]
 
 [dependencies]
-vide = "centau/vide@0.4.1"

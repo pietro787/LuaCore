@@ -1,17 +1,18 @@
 --!strict
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 type ModuleInfo = {
     Name:string,
     Module:ModuleScript,
     Priority:number,
 }
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
 local Bootloader = {}
 
 local Output = require("./Output")
 local Interface = require("./Classes/Interface")
-local Vide = require("../Packages/vide")
+local Vide = require("./Packages/vide")
 
 local started = false
 local uiStarted = false
