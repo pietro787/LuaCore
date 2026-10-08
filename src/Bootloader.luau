@@ -100,7 +100,7 @@ function Bootloader.Start(folder:Folder?)
     local uiModules = {}
 
     for _, info in Modules do
-        debug.profilebegin(info.Name)
+        debug.profilebegin(info.Name.. " require")
         local requireSuccess, module = pcall(require, info.Module)
 
         if not requireSuccess then
@@ -109,18 +109,28 @@ function Bootloader.Start(folder:Folder?)
             continue
         end
 
-        if typeof(module) ~= "table" then continue end
+        if typeof(module) ~= "table" then 
+            debug.profileend()
+            continue
+        end
+        
+        debug.profileend()
+
         if module.Load and typeof(module.Load) == "function" then
-           local success, errmsg = pcall(module.Load)
+            debug.profilebegin(info.Name.. " load")
+            local success, errmsg = pcall(module.Load)
 
             if not success then
                 Output.Error(errmsg, true, info.Name.." 'Load'")
                 debug.profileend()
                 continue
             end 
+
+            debug.profileend()
         end
 
         if module.Start and typeof(module.Start) == "function" then
+            debug.profilebegin(info.Name.. " start")
             local success, errmsg = pcall(module.Start)
 
             if not success then
@@ -128,10 +138,13 @@ function Bootloader.Start(folder:Folder?)
                 debug.profileend()
                 continue
             end
+
+            debug.profileend()
         end
 
         if module.Init and typeof(module.Init) == "function" then
             task.spawn(function()
+                debug.profilebegin(info.Name.. "init")
                 local success, errmsg = pcall(module.Init)
 
                 if not success then
@@ -139,14 +152,14 @@ function Bootloader.Start(folder:Folder?)
                     debug.profileend()
                     return
                 end
+
+                debug.profileend()
             end)
         end
 
         if module.Build and typeof(module.Build) == "table" then
             table.insert(uiModules, module)
         end
-
-        debug.profileend()
     end
 
     task.defer(function()

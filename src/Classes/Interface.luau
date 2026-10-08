@@ -19,10 +19,10 @@ function Interface.new(vide)
     local NewInterface = {}
     setmetatable(NewInterface, Interface)
 
-    Interface.HasVide = vide ~= nil
-    Interface.Vide = vide
-    Interface.Instance = nil
-    Interface.BuildFunction = nil
+    NewInterface.HasVide = vide ~= nil
+    NewInterface.Vide = vide
+    NewInterface.Instance = nil
+    NewInterface.BuildFunction = nil
 
     return NewInterface :: ClassType
 end
