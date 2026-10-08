@@ -4,5 +4,5 @@ Framework pessoal meu :)
 
 Wally:
 ```
-LuaCore = "pietro787/luacore@1.1.6"
+LuaCore = "pietro787/luacore@1.1.7"
 ``` 

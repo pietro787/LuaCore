@@ -181,44 +181,44 @@ function Bootloader.StartUIs(uiModules:{Build:Interface.ClassType, [string]:any}
     end
 
     videRoot(function()
-        local ScreenGui
-        ScreenGui = create "ScreenGui" {
+        local ScreenGui = create "ScreenGui" {
             ResetOnSpawn = false,
             Parent = Player:WaitForChild("PlayerGui"),
-            Name = "LuaCore_ScreenGui",
-            function()
-                local AllInterfaces = {}
-                for _, module in uiModules do
-                    local moduleInterface = module.Build
-                    if not moduleInterface.Instance then
-                        task.spawn(function()
-                            local waited = 0
-                            while not moduleInterface.Instance do
-                                task.wait(0.1)
-                                waited += 0.1
-
-                                if waited >= 2 then
-                                    Output.Warn("the interface took too long to load", "Bootloader")
-                                    break
-                                end
-                            end
-
-                            if moduleInterface.Instance and typeof(moduleInterface.Instance) == "Instance" then
-                                moduleInterface.Instance.Parent = ScreenGui
-                            end
-                        end)
-
-                        continue
-                    end
-                    
-                    if typeof(moduleInterface.Instance) == "Instance" then
-                        table.insert(AllInterfaces, moduleInterface.Instance)
-                    end
-                end
-
-                return table.unpack(AllInterfaces)
-            end
+            Name = "LuaCore_ScreenGui"
         }
+        
+        local AllInterfaces = {}
+        for _, module in uiModules do
+            local moduleInterface = module.Build
+            if not moduleInterface.Instance then
+                task.spawn(function()
+                    local waited = 0
+                    while not moduleInterface.Instance do
+                        task.wait(0.1)
+                        waited += 0.1
+
+                        if waited >= 2 then
+                            Output.Warn("the interface took too long to load", "Bootloader")
+                            break
+                        end
+                    end
+
+                    if moduleInterface.Instance and typeof(moduleInterface.Instance) == "Instance" then
+                        moduleInterface.Instance.Parent = ScreenGui
+                    end
+                end)
+
+                continue
+            end
+            
+            if typeof(moduleInterface.Instance) == "Instance" then
+                table.insert(AllInterfaces, moduleInterface.Instance)
+            end
+        end
+ 
+        for _, interface in AllInterfaces do
+            interface.Parent = ScreenGui
+        end 
     end)
 end
 
