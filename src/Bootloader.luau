@@ -24,6 +24,7 @@ local Interface = require("./Classes/Interface")
 local Vide = require("./libs/vide") :: Interface.Vide
 local WaitForDescendant = require("./Utils/WaitForDescendant")
 local WaitFor = require("./Utils/WaitFor")
+local Network = require("./Network")
 
 local started = false
 local uiStarted = false
@@ -171,9 +172,11 @@ function Bootloader.Start(folder:Folder?)
         Bootloader.SetRoot(folder)
     end
 
+    Network.Init()
     const Modules = Bootloader.MapModules()
     local uiModules = {}
 
+    if not Modules then return end
     for _, info in Modules do
         debug.profilebegin(info.Name.. " require")
         local requireSuccess, module = pcall(require, info.Module)
@@ -309,7 +312,7 @@ return setmetatable({}, {
         if not table.find(PublicFunctions, index) then
             return function() end
         end
-
+        
         return Bootloader[index]
     end
 })

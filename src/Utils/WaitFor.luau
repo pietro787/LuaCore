@@ -1,37 +1,50 @@
+type Condition<T...> = any | (T...) -> (any?)
 type Result = {
     OnTimeout:(Result, callback:() -> ()) -> ()
 }
 
 local Output = require("../Output")
 
-return function<T>(callback:(condition:T) -> (), condition:T, timeout:number?, interval:number?):Result
+
+return function<T...>(callback:(condition:Condition<T...>) -> (), condition:Condition<T...>, timeout:number?, interval:number?, ...:T...):Result
+    local function Check(...)
+        if typeof(condition) == "function" then
+            return condition(...)
+        end
+
+        return condition
+    end
+
     local _callback
+    local pack = table.pack(...)
     local result = {
         OnTimeout = function(self, callback)
-            task.spawn(function()
-                _callback = callback
-            end)
+            _callback = callback
         end
     }
 
     task.spawn(function()
         local waited = 0
+        interval = interval or 1
 
-        while not condition do
+        while not Check(table.unpack(pack)) do
             task.wait(interval)
             waited += interval
 
             if waited >= math.max(timeout or 100,  1) then
-                local sucess, err = pcall(callback, condition)
+                if not _callback then break end
+                local sucess, err = pcall(_callback, Check(table.unpack(pack)))
 
                 if not sucess then
                     Output.Warn("(WaitFor) callback error. "..err)
-                end
+                end 
+
+                break
             end
         end
 
-        if condition then
-            local sucess, err = pcall(callback, condition)
+        if Check(table.unpack(pack)) then
+            local sucess, err = pcall(callback, Check(table.unpack(pack)))
 
             if not sucess then
                 Output.Warn("(WaitFor) callback error. "..err)

@@ -2,6 +2,7 @@ local LuaCore = {}
 
 local Bootloader = require("@self/Bootloader")
 local Interface = require("@self/Classes/Interface")
+local Network = require("@self/Network")
 
 function LuaCore:CreateUI(callback, vide)
     return Interface.new(vide):Create(callback)
@@ -23,9 +24,10 @@ type LuaCoreType = {
 return (setmetatable(LuaCore, {
     __index = function(_, index)
         if typeof(index) ~= "string" then return end
+        if index == "Init" then return end
       --  if not PublicFunctions.Bootloader[index] then return end
     
-        return Bootloader[index]
+        return Bootloader[index] or Network[index]
     end,
 
     __call = function(_, param)
